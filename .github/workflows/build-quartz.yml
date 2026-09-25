@@ -1,0 +1,63 @@
+name: Build Quartz site
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build static site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out vault
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          path: vault
+
+      - name: Check out Quartz v5
+        uses: actions/checkout@v6
+        with:
+          repository: jackyzha0/quartz
+          ref: v5
+          path: quartz
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: quartz/package-lock.json
+
+      - name: Install Quartz dependencies
+        working-directory: quartz
+        run: npm ci
+
+      - name: Create Quartz configuration
+        uses: ./vault/.github/actions/create-quartz-config
+        with:
+          base-url: ${{ vars.QUARTZ_BASE_URL }}
+
+      - name: Add linked vault assets
+        run: |
+          mkdir -p quartz/content/resources
+
+          for asset_directory in Images Exports; do
+            source_directory="vault/resources/$asset_directory"
+            if [[ -d "$source_directory" ]]; then
+              cp -a "$source_directory" "quartz/content/resources/"
+            fi
+          done
+
+      - name: Build static site
+        working-directory: quartz
+        run: npx quartz build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: quartz/public

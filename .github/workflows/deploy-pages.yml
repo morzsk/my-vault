@@ -1,0 +1,43 @@
+name: Deploy Quartz site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - resources/Images/**
+      - resources/Exports/**
+      - .github/actions/create-quartz-config/action.yml
+      - .github/actions/create-quartz-config/quartz.config.yaml
+      - .github/workflows/build-quartz.yml
+      - .github/workflows/deploy-pages.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Quartz site
+    uses: ./.github/workflows/build-quartz.yml
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

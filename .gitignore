@@ -1,0 +1,19 @@
+# Obsidian local and device-specific state
+/.obsidian/workspace*.json
+/.obsidian/cache/
+/.sync/
+/.trash/
+
+# Make.md generated state
+/.makemd/
+.space/
+/Tags/
+
+# Dependencies, build output, and operating-system metadata
+/node_modules/
+/dist/
+.DS_Store
+Thumbs.db
+
+# Quartz is configured ephemerally by GitHub Actions
+/quartz.config.yaml

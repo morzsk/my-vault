@@ -1,0 +1,88 @@
+name: Create Quartz configuration
+description: Generate an ephemeral Quartz configuration for an Obsidian vault.
+
+inputs:
+  quartz-directory:
+    description: Quartz checkout path, relative to the Actions workspace.
+    required: false
+    default: quartz
+  source-directory:
+    description: Obsidian content path, relative to the Actions workspace.
+    required: false
+    default: vault/src
+  base-url:
+    description: Site URL without a protocol; inferred from the repository when omitted.
+    required: false
+    default: ""
+
+outputs:
+  base-url:
+    description: Base URL written to quartz.config.yaml.
+    value: ${{ steps.create.outputs.base-url }}
+  config-path:
+    description: Absolute path to the generated configuration.
+    value: ${{ steps.create.outputs.config-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create configuration
+      id: create
+      shell: bash
+      env:
+        INPUT_BASE_URL: ${{ inputs.base-url }}
+        INPUT_QUARTZ_DIRECTORY: ${{ inputs.quartz-directory }}
+        INPUT_SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+      run: |
+        quartz_directory="$GITHUB_WORKSPACE/$INPUT_QUARTZ_DIRECTORY"
+        source_directory="$GITHUB_WORKSPACE/$INPUT_SOURCE_DIRECTORY"
+
+        if [[ ! -d "$quartz_directory" ]]; then
+          echo "Quartz directory does not exist: $quartz_directory" >&2
+          exit 1
+        fi
+
+        if [[ ! -d "$source_directory" ]]; then
+          echo "Vault content directory does not exist: $source_directory" >&2
+          exit 1
+        fi
+
+        base_url="$INPUT_BASE_URL"
+        if [[ -z "$base_url" ]]; then
+          repository_name="${GITHUB_REPOSITORY#*/}"
+          if [[ "$repository_name" == "$GITHUB_REPOSITORY_OWNER.github.io" ]]; then
+            base_url="$GITHUB_REPOSITORY_OWNER.github.io"
+          else
+            base_url="$GITHUB_REPOSITORY_OWNER.github.io/$repository_name"
+          fi
+        fi
+
+        cd "$quartz_directory"
+        npx quartz create \
+          --template obsidian \
+          --strategy copy \
+          --source "$source_directory" \
+          --baseUrl "$base_url"
+
+        config_path="$quartz_directory/quartz.config.yaml"
+        if [[ ! -f "$config_path" ]]; then
+          echo "Quartz did not create $config_path" >&2
+          exit 1
+        fi
+
+        cp "$GITHUB_ACTION_PATH/quartz.config.yaml" "$config_path"
+        sed -i \
+          -e "s|__BASE_URL__|$base_url|g" \
+          -e "s|__REPOSITORY__|$GITHUB_REPOSITORY|g" \
+          "$config_path"
+
+        npx quartz plugin install --from-config
+
+        excalidraw_entry="$quartz_directory/.quartz/plugins/obsidian-plugin-excalidraw/dist/index.js"
+        if [[ ! -f "$excalidraw_entry" ]]; then
+          echo "The Quartz Excalidraw plugin failed to install: $excalidraw_entry" >&2
+          exit 1
+        fi
+
+        echo "base-url=$base_url" >> "$GITHUB_OUTPUT"
+        echo "config-path=$config_path" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,12 @@
+{
+  "cssTheme": "Minimal",
+  "textFontFamily": "American Typewriter",
+  "interfaceFontFamily": "American Typewriter",
+  "baseFontSize": 22,
+  "enabledCssSnippets": [
+    "excaliwidth"
+  ],
+  "accentColor": "#ff4d00",
+  "baseFontSizeAction": true,
+  "theme": "obsidian"
+}
