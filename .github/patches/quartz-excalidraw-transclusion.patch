@@ -1,0 +1,14 @@
+diff --git a/quartz/components/renderPage.tsx b/quartz/components/renderPage.tsx
+--- a/quartz/components/renderPage.tsx
++++ b/quartz/components/renderPage.tsx
+@@ -287,6 +287,10 @@ export function renderTranscludes(
+         ]
+       }
+ 
++      if (page.slug?.endsWith(".excalidraw")) {
++        el.tagName = "div"
++      }
++
+       // Recurse into the replaced children to resolve nested transclusions,
+       // then remove from visited so sibling embeds of the same target work.
+       walk(el)

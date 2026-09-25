@@ -83,7 +83,7 @@ plugins:
     enabled: true
     options:
       enableInteraction: true
-      darkMode: auto
+      darkMode: "light"
       exportPadding: 20
 
   - source: "@quartz-community/github-flavored-markdown"

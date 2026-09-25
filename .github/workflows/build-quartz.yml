@@ -26,6 +26,10 @@ jobs:
           ref: v5
           path: quartz
 
+      - name: Use divs for Excalidraw transclusions
+        working-directory: quartz
+        run: git apply ../vault/.github/patches/quartz-excalidraw-transclusion.patch
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
