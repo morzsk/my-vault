@@ -1,0 +1,31 @@
+diff --git a/src/components/scripts/excalidraw.inline.ts b/src/components/scripts/excalidraw.inline.ts
+--- a/src/components/scripts/excalidraw.inline.ts
++++ b/src/components/scripts/excalidraw.inline.ts
+@@ -37,7 +37,8 @@ function initializeExcalidrawPage(page: HTMLElement) {
+   const svg = container.querySelector("svg");
+   if (!svg) return;
+ 
+-  container.style.backgroundColor = "var(--excalidraw-bg, var(--light))";
++  const drawingBackground = svg.getAttribute("data-bg-color");
++  container.style.backgroundColor = drawingBackground || "var(--excalidraw-bg, var(--light))";
+ 
+   var overlaysContainer = page.querySelector(".excalidraw-overlays");
+ 
+diff --git a/src/renderer.ts b/src/renderer.ts
+--- a/src/renderer.ts
++++ b/src/renderer.ts
+@@ -88,7 +88,13 @@ export function renderToSvg(
+     });
+   }
+ 
+-  const renderedElements = elements.map((el) => renderElement(el, data, ctx)).filter(Boolean);
++  let renderedElements = elements.map((el) => renderElement(el, data, ctx)).filter(Boolean);
++
++  if (opts.darkMode === "light") {
++    renderedElements = renderedElements.map((element) =>
++      element.replace(/var\(--excalidraw-color-[^,]+,\s*([^)]+)\)/g, "$1"),
++    );
++  }
+ 
+   const parts = [
+     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" data-bg-color="${escapeAttr(bgColor ?? "#ffffff")}">`,

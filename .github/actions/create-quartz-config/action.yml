@@ -84,5 +84,11 @@ runs:
           exit 1
         fi
 
+        excalidraw_directory="$quartz_directory/.quartz/plugins/obsidian-plugin-excalidraw"
+        git -C "$excalidraw_directory" apply \
+          "$GITHUB_WORKSPACE/vault/.github/patches/quartz-excalidraw-original-colors.patch"
+        npm --prefix "$excalidraw_directory" ci --include=dev
+        npm --prefix "$excalidraw_directory" run build
+
         echo "base-url=$base_url" >> "$GITHUB_OUTPUT"
         echo "config-path=$config_path" >> "$GITHUB_OUTPUT"

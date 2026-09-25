@@ -1,12 +1,15 @@
 diff --git a/quartz/components/renderPage.tsx b/quartz/components/renderPage.tsx
 --- a/quartz/components/renderPage.tsx
 +++ b/quartz/components/renderPage.tsx
-@@ -287,6 +287,10 @@ export function renderTranscludes(
+@@ -287,6 +287,13 @@ export function renderTranscludes(
          ]
        }
  
-+      if (page.slug?.endsWith(".excalidraw")) {
++      if (page.slug?.endsWith(".excalidraw") && !blockRef) {
 +        el.tagName = "div"
++
++        // Keep only the drawing; omit the generic transclusion title and source link.
++        el.children = el.children.slice(1, -1)
 +      }
 +
        // Recurse into the replaced children to resolve nested transclusions,
